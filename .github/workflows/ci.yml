@@ -59,6 +59,22 @@ jobs:
       env:
         DISABLE_INSPECT_FUSE: on
 
+    - name: Upload Windows installer (.exe)
+      if: success() && github.ref == 'refs/heads/main'
+      uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4
+      with:
+        name: Signal-Windows-Installer
+        path: release/*.exe
+        if-no-files-found: error
+
+    - name: Upload Windows release folder (dev/untagged)
+      if: success() && github.ref != 'refs/heads/main'
+      uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4
+      with:
+        name: Signal-Windows-Release
+        path: release/**
+        if-no-files-found: error
+
     - name: Upload installer size
       if: ${{ github.repository == 'signalapp/Signal-Desktop-Private' && github.ref == 'refs/heads/main' }}
       run: node ts/scripts/dd-installer-size.js windows
