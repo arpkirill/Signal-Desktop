@@ -41,6 +41,7 @@ export type PropsType = {
   onClick: () => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
+  onContextMenu?: (event: React.MouseEvent) => void;
   tooltipDirection?: TooltipPlacement;
 };
 
@@ -51,6 +52,7 @@ export function CallingButton({
   onClick,
   onMouseEnter,
   onMouseLeave,
+  onContextMenu,
   tooltipDirection,
 }: PropsType): JSX.Element {
   const uniqueButtonId = useMemo(() => uuid(), []);
@@ -156,6 +158,7 @@ export function CallingButton({
       onClick={handleClick}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
+      onContextMenu={onContextMenu}
       type="button"
     >
       <div />

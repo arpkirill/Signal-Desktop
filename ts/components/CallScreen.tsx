@@ -22,6 +22,7 @@ import { CallingHeader, getCallViewIconClassname } from './CallingHeader';
 import { CallingPreCallInfo, RingMode } from './CallingPreCallInfo';
 import { CallingButton, CallingButtonType } from './CallingButton';
 import { Button, ButtonVariant } from './Button';
+import { setRequestedScreenShareFramerate, type ScreenShareFramerate } from '../calling/constants';
 import { TooltipPlacement } from './Tooltip';
 import { CallBackgroundBlur } from './CallBackgroundBlur';
 import type {
@@ -285,6 +286,33 @@ export function CallScreen({
   const toggleReactionPicker = useCallback(() => {
     setShowReactionPicker(prevValue => !prevValue);
   }, []);
+
+  // FPS context menu state
+  const [showFpsMenu, setShowFpsMenu] = useState(false);
+  const [fpsMenuPos, setFpsMenuPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const openFpsMenu = useCallback((event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setFpsMenuPos({ x: event.clientX, y: event.clientY });
+    setShowFpsMenu(true);
+  }, []);
+  const closeFpsMenu = useCallback(() => setShowFpsMenu(false), []);
+  const selectFps = useCallback((value: ScreenShareFramerate) => {
+    setRequestedScreenShareFramerate(value);
+    setShowFpsMenu(false);
+  }, []);
+
+  useEffect(() => {
+    if (!showFpsMenu) {
+      return noop;
+    }
+    const handler = (e: MouseEvent) => {
+      // Close on any click outside
+      setShowFpsMenu(false);
+    };
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, [showFpsMenu]);
 
   const [showRaisedHandsList, setShowRaisedHandsList] = useState(false);
   const toggleRaisedHandsList = useCallback(() => {
@@ -1088,6 +1116,7 @@ export function CallScreen({
               onMouseEnter={onControlsMouseEnter}
               onMouseLeave={onControlsMouseLeave}
               onClick={toggleVideo}
+              onContextMenu={openFpsMenu}
               tooltipDirection={TooltipPlacement.Top}
             />
             <CallingButton
@@ -1096,6 +1125,7 @@ export function CallScreen({
               onMouseEnter={onControlsMouseEnter}
               onMouseLeave={onControlsMouseLeave}
               onClick={toggleAudio}
+              onContextMenu={openFpsMenu}
               tooltipDirection={TooltipPlacement.Top}
             />
             {raiseHandButtonType && (
@@ -1114,6 +1144,7 @@ export function CallScreen({
               onMouseEnter={onControlsMouseEnter}
               onMouseLeave={onControlsMouseLeave}
               onClick={togglePresenting}
+              onContextMenu={openFpsMenu}
               tooltipDirection={TooltipPlacement.Top}
             />
             {reactButtonType && (
@@ -1153,6 +1184,57 @@ export function CallScreen({
         </div>
         <div className="module-calling__spacer CallControls__OuterSpacer" />
       </div>
+      {showFpsMenu && (
+        <div
+          role="menu"
+          onClick={e => e.stopPropagation()}
+          onContextMenu={e => {
+            e.preventDefault();
+            e.stopPropagation();
+            closeFpsMenu();
+          }}
+          style={{
+            position: 'fixed',
+            left: `${fpsMenuPos.x}px`,
+            top: `${fpsMenuPos.y}px`,
+            zIndex: 10000,
+            background: 'rgba(28,28,28,0.98)',
+            color: '#fff',
+            padding: '8px',
+            borderRadius: '6px',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.5)',
+            minWidth: '160px',
+          }}
+        >
+          <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 6 }}>
+            Screen share FPS
+          </div>
+          <button
+            type="button"
+            className="link"
+            style={{ display: 'block', width: '100%', textAlign: 'left', color: '#fff' }}
+            onClick={() => selectFps(5)}
+          >
+            5 FPS (low)
+          </button>
+          <button
+            type="button"
+            className="link"
+            style={{ display: 'block', width: '100%', textAlign: 'left', color: '#fff', marginTop: 4 }}
+            onClick={() => selectFps(15)}
+          >
+            15 FPS (medium)
+          </button>
+          <button
+            type="button"
+            className="link"
+            style={{ display: 'block', width: '100%', textAlign: 'left', color: '#fff', marginTop: 4 }}
+            onClick={() => selectFps(30)}
+          >
+            30 FPS (high)
+          </button>
+        </div>
+      )}
     </div>
   );
 }

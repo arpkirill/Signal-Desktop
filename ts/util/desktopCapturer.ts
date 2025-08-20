@@ -12,7 +12,7 @@ import type { LocalizerType } from '../types/Util';
 import {
   REQUESTED_SCREEN_SHARE_WIDTH,
   REQUESTED_SCREEN_SHARE_HEIGHT,
-  REQUESTED_SCREEN_SHARE_FRAMERATE,
+  getRequestedScreenShareFramerate,
 } from '../calling/constants';
 import { strictAssert } from './assert';
 import { explodePromise } from './explodePromise';
@@ -206,8 +206,8 @@ export class DesktopCapturer {
         },
         frameRate: {
           min: 1,
-          max: REQUESTED_SCREEN_SHARE_FRAMERATE,
-          ideal: REQUESTED_SCREEN_SHARE_FRAMERATE,
+          max: getRequestedScreenShareFramerate(),
+          ideal: getRequestedScreenShareFramerate(),
         },
       });
 
@@ -263,7 +263,7 @@ export class DesktopCapturer {
     const stream: Stream = new macScreenShare.Stream({
       width: REQUESTED_SCREEN_SHARE_WIDTH,
       height: REQUESTED_SCREEN_SHARE_HEIGHT,
-      frameRate: REQUESTED_SCREEN_SHARE_FRAMERATE,
+      frameRate: getRequestedScreenShareFramerate(),
 
       onStart: () => {
         isRunning = true;

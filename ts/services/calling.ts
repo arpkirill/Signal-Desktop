@@ -104,7 +104,7 @@ import {
   REQUESTED_GROUP_VIDEO_HEIGHT,
   REQUESTED_SCREEN_SHARE_WIDTH,
   REQUESTED_SCREEN_SHARE_HEIGHT,
-  REQUESTED_SCREEN_SHARE_FRAMERATE,
+  getRequestedScreenShareFramerate,
 } from '../calling/constants';
 import { callingMessageToProto } from '../util/callingMessageToProto';
 import { requestMicrophonePermissions } from '../util/requestMicrophonePermissions';
@@ -2416,7 +2416,7 @@ export class CallingClass {
 
     // Start screen sharing stream
     await this.enableCaptureAndSend(call, {
-      maxFramerate: REQUESTED_SCREEN_SHARE_FRAMERATE,
+      maxFramerate: getRequestedScreenShareFramerate(),
       maxHeight: REQUESTED_SCREEN_SHARE_HEIGHT,
       maxWidth: REQUESTED_SCREEN_SHARE_WIDTH,
       mediaStream,

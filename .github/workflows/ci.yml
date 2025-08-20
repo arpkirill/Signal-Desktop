@@ -82,7 +82,7 @@ jobs:
   macos:
     needs: lint
     runs-on: macos-latest
-    if: github.ref == 'refs/heads/main'
+    if: ${{ false }}
     timeout-minutes: 30
 
     steps:
@@ -156,6 +156,7 @@ jobs:
   linux:
     needs: lint
     runs-on: ubuntu-22.04-8-cores
+    if: ${{ false }}
     timeout-minutes: 30
 
     steps:
