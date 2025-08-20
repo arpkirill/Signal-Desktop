@@ -22,7 +22,7 @@ import { CallingHeader, getCallViewIconClassname } from './CallingHeader';
 import { CallingPreCallInfo, RingMode } from './CallingPreCallInfo';
 import { CallingButton, CallingButtonType } from './CallingButton';
 import { Button, ButtonVariant } from './Button';
-import { setRequestedScreenShareFramerate, type ScreenShareFramerate } from '../calling/constants';
+import { setRequestedScreenShareFramerate, getRequestedScreenShareFramerate, type ScreenShareFramerate } from '../calling/constants';
 import { TooltipPlacement } from './Tooltip';
 import { CallBackgroundBlur } from './CallBackgroundBlur';
 import type {
@@ -287,7 +287,8 @@ export function CallScreen({
     setShowReactionPicker(prevValue => !prevValue);
   }, []);
 
-  // FPS context menu state
+  // FPS control/menu state
+  const [fpsValue, setFpsValue] = useState<ScreenShareFramerate>(getRequestedScreenShareFramerate());
   const [showFpsMenu, setShowFpsMenu] = useState(false);
   const [fpsMenuPos, setFpsMenuPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const openFpsMenu = useCallback((event: React.MouseEvent) => {
@@ -299,6 +300,7 @@ export function CallScreen({
   const closeFpsMenu = useCallback(() => setShowFpsMenu(false), []);
   const selectFps = useCallback((value: ScreenShareFramerate) => {
     setRequestedScreenShareFramerate(value);
+    setFpsValue(value);
     setShowFpsMenu(false);
   }, []);
 
@@ -1110,6 +1112,27 @@ export function CallScreen({
           )}
 
           <div className="CallControls__ButtonContainer">
+            {/* FPS control button visible in the controls bar */}
+            <div className="CallControls__FpsControl" onMouseEnter={onControlsMouseEnter} onMouseLeave={onControlsMouseLeave}>
+              <button
+                type="button"
+                aria-label={`Screen share FPS: ${fpsValue}`}
+                className="CallControls__FpsButton"
+                onClick={(e) => openFpsMenu(e)}
+                onContextMenu={(e) => openFpsMenu(e)}
+                style={{
+                  color: '#fff',
+                  background: 'rgba(255,255,255,0.1)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  borderRadius: 8,
+                  padding: '8px 10px',
+                  marginRight: 8,
+                  cursor: 'pointer',
+                }}
+              >
+                FPS: {fpsValue}
+              </button>
+            </div>
             <CallingButton
               buttonType={videoButtonType}
               i18n={i18n}
