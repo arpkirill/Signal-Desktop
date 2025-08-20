@@ -1263,7 +1263,7 @@ export function CallScreen({
           <div style={{ fontSize: 12, opacity: 0.75, marginBottom: 8, letterSpacing: 0.2 }}>
             Screen share FPS
           </div>
-          {([1, 5, 15, 30, 60] as ScreenShareFramerate[]).map(opt => (
+          {([1, 5, 15, 30, 60, 144] as ScreenShareFramerate[]).map(opt => (
             <button
               key={opt}
               type="button"
