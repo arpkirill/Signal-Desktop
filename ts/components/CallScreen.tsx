@@ -287,6 +287,8 @@ export function CallScreen({
     setShowReactionPicker(prevValue => !prevValue);
   }, []);
 
+  const fpsMenuRef = React.useRef<null | HTMLDivElement>(null);
+
   // FPS control/menu state
   const [fpsValue, setFpsValue] = useState<ScreenShareFramerate>(getRequestedScreenShareFramerate());
   const [showFpsMenu, setShowFpsMenu] = useState(false);
@@ -315,6 +317,30 @@ export function CallScreen({
     document.addEventListener('click', handler);
     return () => document.removeEventListener('click', handler);
   }, [showFpsMenu]);
+
+  // Clamp the FPS menu within the viewport after it opens
+  React.useLayoutEffect(() => {
+    if (!showFpsMenu) {
+      return;
+    }
+    const el = fpsMenuRef.current;
+    if (!el) {
+      return;
+    }
+    const rect = el.getBoundingClientRect();
+    const pad = 8;
+    let left = fpsMenuPos.x;
+    let top = fpsMenuPos.y;
+    const maxLeft = window.innerWidth - rect.width - pad;
+    const maxTop = window.innerHeight - rect.height - pad;
+    if (left > maxLeft) left = Math.max(pad, maxLeft);
+    if (top > maxTop) top = Math.max(pad, maxTop);
+    if (left < pad) left = pad;
+    if (top < pad) top = pad;
+    if (left !== fpsMenuPos.x || top !== fpsMenuPos.y) {
+      setFpsMenuPos({ x: left, y: top });
+    }
+  }, [showFpsMenu, fpsMenuPos]);
 
   const [showRaisedHandsList, setShowRaisedHandsList] = useState(false);
   const toggleRaisedHandsList = useCallback(() => {
@@ -1209,6 +1235,7 @@ export function CallScreen({
       </div>
       {showFpsMenu && (
         <div
+          ref={fpsMenuRef as any}
           role="menu"
           onClick={e => e.stopPropagation()}
           onContextMenu={e => {
@@ -1223,39 +1250,44 @@ export function CallScreen({
             zIndex: 10000,
             background: 'rgba(28,28,28,0.98)',
             color: '#fff',
-            padding: '8px',
-            borderRadius: '6px',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.5)',
-            minWidth: '160px',
+            padding: '10px',
+            borderRadius: '10px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
+            minWidth: '200px',
+            maxWidth: '260px',
+            maxHeight: '60vh',
+            overflowY: 'auto',
+            border: '1px solid rgba(255,255,255,0.12)'
           }}
         >
-          <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 6 }}>
+          <div style={{ fontSize: 12, opacity: 0.75, marginBottom: 8, letterSpacing: 0.2 }}>
             Screen share FPS
           </div>
-          <button
-            type="button"
-            className="link"
-            style={{ display: 'block', width: '100%', textAlign: 'left', color: '#fff' }}
-            onClick={() => selectFps(5)}
-          >
-            5 FPS (low)
-          </button>
-          <button
-            type="button"
-            className="link"
-            style={{ display: 'block', width: '100%', textAlign: 'left', color: '#fff', marginTop: 4 }}
-            onClick={() => selectFps(15)}
-          >
-            15 FPS (medium)
-          </button>
-          <button
-            type="button"
-            className="link"
-            style={{ display: 'block', width: '100%', textAlign: 'left', color: '#fff', marginTop: 4 }}
-            onClick={() => selectFps(30)}
-          >
-            30 FPS (high)
-          </button>
+          {([1, 5, 15, 30, 60] as ScreenShareFramerate[]).map(opt => (
+            <button
+              key={opt}
+              type="button"
+              className="link"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                width: '100%',
+                textAlign: 'left',
+                color: '#fff',
+                padding: '6px 8px',
+                borderRadius: 6,
+                background: opt === fpsValue ? 'rgba(255,255,255,0.08)' : 'transparent'
+              }}
+              onClick={() => selectFps(opt)}
+            >
+              <span style={{ width: 16, textAlign: 'center', opacity: opt === fpsValue ? 1 : 0.4 }}>
+                {opt === fpsValue ? '✓' : '•'}
+              </span>
+              <span style={{ flex: 1 }}>{opt} FPS{opt === 1 ? ' (min)' : opt === 5 ? ' (low)' : opt === 15 ? ' (medium)' : opt === 30 ? ' (high)' : ' (max)'}
+              </span>
+            </button>
+          ))}
         </div>
       )}
     </div>
