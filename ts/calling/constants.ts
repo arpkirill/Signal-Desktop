@@ -14,7 +14,7 @@ export const REQUESTED_GROUP_VIDEO_HEIGHT = 480;
 export const REQUESTED_SCREEN_SHARE_WIDTH = 2880;
 export const REQUESTED_SCREEN_SHARE_HEIGHT = 1800;
 // 15fps is much nicer but takes up a lot more CPU.
-export const REQUESTED_SCREEN_SHARE_FRAMERATE = 60;
+export const REQUESTED_SCREEN_SHARE_FRAMERATE = 59;
 
 export const MAX_FRAME_WIDTH = 2880;
 export const MAX_FRAME_HEIGHT = 1800;
