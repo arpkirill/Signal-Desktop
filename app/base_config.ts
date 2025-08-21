@@ -4,7 +4,7 @@
 import { readFileSync, unlinkSync } from 'fs';
 import { sync as writeFileSync } from 'write-file-atomic';
 
-import { get } from 'lodash';
+import { get, unset as lodashUnset, cloneDeep } from 'lodash';
 import { set } from 'lodash/fp';
 import { strictAssert } from '../ts/util/assert';
 import { createLogger } from '../ts/logging/log';
@@ -18,6 +18,7 @@ type InternalConfigType = Record<string, unknown>;
 export type ConfigType = {
   set: (keyPath: string, value: unknown) => void;
   get: (keyPath: string) => unknown;
+  unset: (keyPath: string) => void;
   remove: () => void;
 
   // Test-only
@@ -92,6 +93,29 @@ export function start({
     }
   }
 
+  function ourUnset(keyPath: string): void {
+    const newCachedValue = cloneDeep(cachedValue);
+    lodashUnset(newCachedValue, keyPath);
+
+    log.info(`config/unset: Saving ${name} config to disk`);
+
+    const outgoingJson = JSON.stringify(newCachedValue, null, '  ');
+    try {
+      writeFileSync(targetPath, outgoingJson, ENCODING);
+      log.info(`config/unset: Saved ${name} config to disk`);
+      cachedValue = newCachedValue;
+    } catch (err: unknown) {
+      if (throwOnFilesystemErrors) {
+        throw err;
+      } else {
+        log.warn(
+          `config/unset: Failed to save ${name} config to disk; only updating in-memory data`
+        );
+        cachedValue = newCachedValue;
+      }
+    }
+  }
+
   function remove(): void {
     log.info(`config/remove: Deleting ${name} config from disk`);
     try {
@@ -116,6 +140,7 @@ export function start({
   return {
     set: ourSet,
     get: ourGet,
+    unset: ourUnset,
     remove,
     _getCachedValue: () => cachedValue,
   };

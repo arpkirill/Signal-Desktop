@@ -111,3 +111,40 @@ jobs:
       uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4
       with:
         path: artifacts
+
+  sticker-creator:
+    name: Sticker Creator
+    runs-on: ubuntu-latest
+    if: false
+    timeout-minutes: 30
+
+    defaults:
+      run:
+        working-directory: sticker-creator
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4
+      - name: Setup node.js
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Install Sticker Creator node_modules
+        run: pnpm install
+
+      - name: Build Sticker Creator
+        run: pnpm run build
+
+      - name: Check Sticker Creator types
+        run: pnpm run check:types
+
+      - name: Check Sticker Creator formatting
+        run: pnpm run prettier:check
+
+      - name: Check Sticker Creator linting
+        run: pnpm run lint
+
+      - name: Run tests
+        run: pnpm test -- --run
