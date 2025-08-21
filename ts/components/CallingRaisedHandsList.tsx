@@ -138,7 +138,7 @@ export function CallingRaisedHandsList({
                     {i18n('icu:CallControls__RaiseHands--lower')}
                   </button>
                 )}
-              <div className="module-calling-participants-list__status-icon CallingRaisedHandsList__NameHandIcon" />
+              <span className="module-calling-participants-list__status-icon" role="img" aria-label={i18n('icu:CallControls__RaiseHands--raise')} style={{ fontSize: 16, lineHeight: '16px' }}>🖕</span>
             </li>
           ))}
         </ul>

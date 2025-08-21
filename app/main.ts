@@ -1994,6 +1994,14 @@ electronProtocol.registerSchemesAsPrivileged([
       stream: true,
     },
   },
+  {
+    scheme: 'emoji',
+    privileges: {
+      standard: true,
+      supportFetchAPI: true,
+      stream: true,
+    },
+  },
 ]);
 
 // This method will be called when Electron has finished
