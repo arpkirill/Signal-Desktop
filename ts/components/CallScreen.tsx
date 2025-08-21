@@ -292,11 +292,19 @@ export function CallScreen({
 
   // FPS control/menu state
   const [fpsValue, setFpsValue] = useState<ScreenShareFramerate>(getRequestedScreenShareFramerate());
+  const [isFpsMenuMounted, setIsFpsMenuMounted] = useState(false);
   const [showFpsMenu, setShowFpsMenu] = useState(false);
   const [fpsMenuPos, setFpsMenuPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const openFpsMenu = useCallback((event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
+
+    // Toggle close if already open (with animation)
+    if (showFpsMenu) {
+      setShowFpsMenu(false);
+      return;
+    }
+
     const btn = fpsButtonRef.current;
     if (btn) {
       const rect = btn.getBoundingClientRect();
@@ -305,13 +313,21 @@ export function CallScreen({
     } else {
       setFpsMenuPos({ x: event.clientX, y: event.clientY });
     }
-    setShowFpsMenu(true);
+    // mount then animate in
+    setIsFpsMenuMounted(true);
+    requestAnimationFrame(() => setShowFpsMenu(true));
+  }, [showFpsMenu]);
+  const closeFpsMenu = useCallback(() => {
+    // animate out then unmount
+    setShowFpsMenu(false);
+    setTimeout(() => setIsFpsMenuMounted(false), 200);
   }, []);
-  const closeFpsMenu = useCallback(() => setShowFpsMenu(false), []);
   const selectFps = useCallback((value: ScreenShareFramerate) => {
     setRequestedScreenShareFramerate(value);
     setFpsValue(value);
+    // close with animation
     setShowFpsMenu(false);
+    setTimeout(() => setIsFpsMenuMounted(false), 200);
   }, []);
 
   // Simple fade/slide animation state for the FPS menu
@@ -325,16 +341,17 @@ export function CallScreen({
   }, [showFpsMenu]);
 
   useEffect(() => {
-    if (!showFpsMenu) {
+    if (!isFpsMenuMounted) {
       return noop;
     }
     const handler = (e: MouseEvent) => {
       // Close on any click outside
       setShowFpsMenu(false);
+      setTimeout(() => setIsFpsMenuMounted(false), 200);
     };
     document.addEventListener('click', handler);
     return () => document.removeEventListener('click', handler);
-  }, [showFpsMenu]);
+  }, [isFpsMenuMounted]);
 
   // Clamp the FPS menu within the viewport after it opens
   React.useLayoutEffect(() => {
@@ -1259,7 +1276,7 @@ export function CallScreen({
         </div>
         <div className="module-calling__spacer CallControls__OuterSpacer" />
       </div>
-      {showFpsMenu && (
+      {isFpsMenuMounted && (
         <div
           ref={fpsMenuRef as any}
           role="menu"
