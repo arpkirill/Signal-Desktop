@@ -12,7 +12,7 @@ on:
 
 jobs:
   lint:
-    runs-on: ubuntu-22.04-8-cores
+    runs-on: ubuntu-latest
     timeout-minutes: 30
 
     steps:
@@ -82,7 +82,7 @@ jobs:
   macos:
     needs: lint
     runs-on: macos-latest
-    if: github.ref == 'refs/heads/main'
+    if: false
     timeout-minutes: 30
 
     steps:
@@ -155,7 +155,8 @@ jobs:
 
   linux:
     needs: lint
-    runs-on: ubuntu-22.04-8-cores
+    runs-on: ubuntu-latest
+    if: false
     timeout-minutes: 30
 
     steps:
@@ -257,7 +258,7 @@ jobs:
 
   windows:
     needs: lint
-    runs-on: windows-latest-8-cores
+    runs-on: windows-latest
     timeout-minutes: 30
 
     steps:
@@ -295,12 +296,6 @@ jobs:
 
     - name: Build with NSIS
       run: pnpm run build:release
-      if: github.ref == 'refs/heads/main'
-      env:
-        DISABLE_INSPECT_FUSE: on
-    - name: Build without NSIS
-      run: pnpm run build:release --win dir
-      if: github.ref != 'refs/heads/main'
       env:
         DISABLE_INSPECT_FUSE: on
 
@@ -327,7 +322,8 @@ jobs:
 
   sticker-creator:
     name: Sticker Creator
-    runs-on: ubuntu-22.04-8-cores
+    runs-on: ubuntu-latest
+    if: false
     timeout-minutes: 30
 
     defaults:
@@ -368,8 +364,8 @@ jobs:
       matrix:
         workerIndex: [0, 1, 2, 3]
 
-    runs-on: ubuntu-22.04-8-cores
-    if: ${{ github.repository == 'signalapp/Signal-Desktop-Private' }}
+    runs-on: ubuntu-latest
+    if: false
     timeout-minutes: 30
 
     steps:

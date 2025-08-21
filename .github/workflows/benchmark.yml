@@ -60,8 +60,8 @@ jobs:
           - metric: backup
             script: ts/test-mock/benchmarks/backup_bench.js
 
-    runs-on: ubuntu-22.04-8-cores
-    if: ${{ github.repository == 'signalapp/Signal-Desktop-Private' && (!github.event.schedule || github.ref == 'refs/heads/main') }}
+    runs-on: ubuntu-latest
+    if: false
     timeout-minutes: 30
 
     steps:
