@@ -115,7 +115,6 @@ jobs:
   sticker-creator:
     name: Sticker Creator
     runs-on: ubuntu-latest
-    if: false
     timeout-minutes: 30
 
     defaults:
