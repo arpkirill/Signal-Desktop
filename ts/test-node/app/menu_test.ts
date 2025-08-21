@@ -129,8 +129,6 @@ const EXPECTED_MACOS: MenuListType = [
   {
     label: '&File',
     submenu: [
-      { label: 'Create/upload sticker pack', click: openArtCreator },
-      { type: 'separator' },
       { accelerator: 'CmdOrCtrl+W', label: 'Close Window', role: 'close' },
     ],
   },
@@ -154,7 +152,6 @@ const EXPECTED_WINDOWS: MenuListType = [
   {
     label: '&File',
     submenu: [
-      { label: 'Create/upload sticker pack', click: openArtCreator },
       {
         label: 'Preferences…',
         accelerator: 'CommandOrControl+,',

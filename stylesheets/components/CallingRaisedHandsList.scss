@@ -28,6 +28,11 @@
   background: transparent;
 }
 
+// Ensure our overlay stays transparent even if the global modal host overlay style loads later
+.module-modal-host__overlay.CallingRaisedHandsList__overlay {
+  background: transparent;
+}
+
 .CallingRaisedHandsList__overlay-container {
   flex-direction: column;
   padding: 0;

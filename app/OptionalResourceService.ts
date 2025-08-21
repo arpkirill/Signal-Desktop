@@ -8,6 +8,7 @@ import { ipcMain } from 'electron';
 import { LRUCache } from 'lru-cache';
 import got from 'got';
 import PQueue from 'p-queue';
+import { net } from 'electron';
 
 import type {
   OptionalResourceType,
@@ -173,7 +174,29 @@ export class OptionalResourceService {
     decl: OptionalResourceType,
     destPath: string
   ): Promise<Buffer> {
-    const result = await got(decl.url, await getGotOptions()).buffer();
+    let result: Buffer;
+
+    // First try Electron's net.fetch, which respects the app/session proxy
+    try {
+      const anyNet: any = net as any;
+      if (anyNet && typeof anyNet.fetch === 'function') {
+        const res = await anyNet.fetch(decl.url, {
+          // Ensure we don't cache a bad first attempt
+          headers: { 'Cache-Control': 'no-cache' },
+        });
+        if (!res.ok) {
+          throw new Error(`net.fetch failed with ${res.status}`);
+        }
+        const arrayBuf = await res.arrayBuffer();
+        result = Buffer.from(arrayBuf);
+      } else {
+        throw new Error('net.fetch not available');
+      }
+    } catch (err) {
+      // Fallback to got with our existing proxy/env configuration
+      log.warn('OptionalResourceService: net.fetch failed, falling back to got', err);
+      result = await got(decl.url, await getGotOptions()).buffer();
+    }
 
     this.#cache.set(name, result);
 

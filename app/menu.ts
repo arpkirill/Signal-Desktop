@@ -46,12 +46,7 @@ export const createTemplate = (
     zoomReset,
   } = options;
 
-    const fileSubmenu: MenuListType[number]['submenu'] = [
-        {
-            label: i18n('icu:mainMenuCreateStickers'),
-            click: openArtCreator,
-        },
-    ];
+    const fileSubmenu: MenuListType[number]['submenu'] = [];
 
   // Only show Settings in File menu on non-macOS platforms
   if (platform !== 'darwin') {
@@ -291,19 +286,22 @@ function updateForMac(
   // in the app menu
   const fileMenu = template[0];
   if (Array.isArray(fileMenu.submenu)) {
-    // Remove the trailing Quit item and its preceding separator, but keep the first item (Create/upload sticker pack)
+    // Remove the trailing Quit item and its preceding separator
     fileMenu.submenu.pop(); // removes Quit
     fileMenu.submenu.pop(); // removes separator before Quit
-    fileMenu.submenu.push(
-      {
-        type: 'separator',
-      },
-      {
-        label: i18n('icu:windowMenuClose'),
-        accelerator: 'CmdOrCtrl+W',
-        role: 'close',
+
+    // After removing Quit, add Close Window. Only insert a separator if there are other items remaining.
+    if (fileMenu.submenu.length > 0) {
+      const last = fileMenu.submenu[fileMenu.submenu.length - 1] as any;
+      if (!last || last.type !== 'separator') {
+        fileMenu.submenu.push({ type: 'separator' });
       }
-    );
+    }
+    fileMenu.submenu.push({
+      label: i18n('icu:windowMenuClose'),
+      accelerator: 'CmdOrCtrl+W',
+      role: 'close',
+    });
   } else {
     throw new Error('updateForMac: fileMenu.submenu was not an array!');
   }
