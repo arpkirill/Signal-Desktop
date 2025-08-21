@@ -288,6 +288,7 @@ export function CallScreen({
   }, []);
 
   const fpsMenuRef = React.useRef<null | HTMLDivElement>(null);
+  const fpsButtonRef = React.useRef<HTMLButtonElement | null>(null);
 
   // FPS control/menu state
   const [fpsValue, setFpsValue] = useState<ScreenShareFramerate>(getRequestedScreenShareFramerate());
