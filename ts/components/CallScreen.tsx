@@ -1167,7 +1167,7 @@ export function CallScreen({
                 ref: reactionPickerRef,
                 onClose: () => setShowReactionPicker(false),
                 onPick: emoji => {
-                  setShowReactionPicker(false);
+                  // Keep the reactions picker open after sending an emoji during group calls
                   sendGroupCallReaction({
                     callMode: activeCall.callMode,
                     conversationId: conversation.id,

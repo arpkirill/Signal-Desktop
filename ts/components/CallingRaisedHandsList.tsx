@@ -264,7 +264,7 @@ export function CallingRaisedHandsListButton({
       style={{ ...opacitySpringProps, ...scaleSpringProps }}
       type="button"
     >
-      <span className="CallingRaisedHandsList__ButtonIcon" />
+      <span className="CallingRaisedHandsList__ButtonIconEmoji" role="img" aria-label={i18n('icu:CallControls__RaiseHands--raise')} style={{ fontSize: 20, lineHeight: '20px' }}>🖕</span>
       {shownSyncedLocalHandRaised ? (
         <>
           {i18n('icu:you')}

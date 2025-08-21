@@ -84,6 +84,13 @@
   );
 }
 
+// Emoji-based icon for the raised hands button (alert button only)
+.CallingRaisedHandsList__ButtonIconEmoji {
+  display: inline-block;
+  margin-inline-end: 4px;
+  // Let font-size/line-height be controlled inline to match layout
+}
+
 .CallingRaisedHandsList__NameHandIcon {
   display: inline-block;
   $icon-size: 16px;
