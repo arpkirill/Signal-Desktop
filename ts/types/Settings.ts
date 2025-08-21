@@ -81,4 +81,4 @@ export const shouldHideExpiringMessageBody = (
 export const isContentProtectionEnabledByDefault = (
   OS: OSType,
   release: string
-): boolean => OS.isWindows() && semver.gte(release, '10.0.22000');
+): boolean => false;

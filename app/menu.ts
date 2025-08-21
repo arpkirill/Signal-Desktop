@@ -39,6 +39,7 @@ export const createTemplate = (
     showCallingDevTools,
     showKeyboardShortcuts,
     showSettings,
+    showProxySettings, 
     openArtCreator,
     zoomIn,
     zoomOut,
@@ -57,6 +58,10 @@ export const createTemplate = (
           label: i18n('icu:mainMenuSettings'),
           accelerator: 'CommandOrControl+,',
           click: showSettings,
+        },
+        {
+          label: 'Proxy…',
+          click: showProxySettings,
         },
         {
           type: 'separator',

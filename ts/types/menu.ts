@@ -14,7 +14,7 @@ export type MenuOptionsType = Readonly<{
   platform: string;
 }>;
 
-export type MenuActionsType = Readonly<{
+export type MenuActionsType = Readonly<{  
   forceUpdate: () => unknown;
   openArtCreator: () => unknown;
   openContactUs: () => unknown;
@@ -29,6 +29,7 @@ export type MenuActionsType = Readonly<{
   showCallingDevTools: () => unknown;
   showKeyboardShortcuts: () => unknown;
   showSettings: () => unknown;
+  showProxySettings: () => unknown;
   showWindow: () => unknown;
   stageLocalBackupForImport: () => unknown;
   zoomIn: () => unknown;

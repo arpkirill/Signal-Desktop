@@ -144,6 +144,7 @@ async function sandboxedEnv() {
       entryPoints: [
         path.join(ROOT_DIR, 'ts', 'windows', 'about', 'app.tsx'),
         path.join(ROOT_DIR, 'ts', 'windows', 'debuglog', 'app.tsx'),
+                path.join(ROOT_DIR, 'ts', 'windows', 'proxy', 'app.tsx'),
         path.join(ROOT_DIR, 'ts', 'windows', 'loading', 'start.ts'),
         path.join(ROOT_DIR, 'ts', 'windows', 'permissions', 'app.tsx'),
         path.join(ROOT_DIR, 'ts', 'windows', 'screenShare', 'app.tsx'),
@@ -162,6 +163,7 @@ async function sandboxedEnv() {
       entryPoints: [
         path.join(ROOT_DIR, 'ts', 'windows', 'about', 'preload.ts'),
         path.join(ROOT_DIR, 'ts', 'windows', 'debuglog', 'preload.ts'),
+                path.join(ROOT_DIR, 'ts', 'windows', 'proxy', 'preload.ts'),
         path.join(ROOT_DIR, 'ts', 'windows', 'loading', 'preload.ts'),
         path.join(ROOT_DIR, 'ts', 'windows', 'permissions', 'preload.ts'),
         path.join(ROOT_DIR, 'ts', 'windows', 'calling-tools', 'preload.ts'),

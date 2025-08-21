@@ -1498,6 +1498,52 @@ async function showDebugLogWindow() {
   );
 }
 
+let proxyWindow: BrowserWindow | undefined;
+async function showProxyWindow() {
+  if (proxyWindow) {
+    proxyWindow.show();
+    return;
+  }
+
+  const options: Electron.BrowserWindowConstructorOptions = {
+    width: 520,
+    height: 220,
+    resizable: false,
+    title: 'Proxy',
+    titleBarStyle: nonMainTitleBarStyle,
+    autoHideMenuBar: true,
+    backgroundColor: await getBackgroundColor(),
+    show: false,
+    webPreferences: {
+      ...defaultWebPrefs,
+      nodeIntegration: false,
+      nodeIntegrationInWorker: false,
+      sandbox: true,
+      contextIsolation: true,
+      preload: join(__dirname, '../bundles/proxy/preload.js'),
+    },
+    parent: mainWindow,
+  };
+
+  proxyWindow = new BrowserWindow(options);
+
+  await handleCommonWindowEvents(proxyWindow);
+
+  proxyWindow.on('closed', () => {
+    proxyWindow = undefined;
+  });
+
+  proxyWindow.once('ready-to-show', () => {
+    proxyWindow?.show();
+    proxyWindow?.center();
+  });
+
+  await safeLoadURL(
+    proxyWindow,
+    await prepareFileUrl([__dirname, '../proxy.html'])
+  );
+}
+
 let permissionsPopupWindow: BrowserWindow | undefined;
 function showPermissionsPopupWindow(forCalling: boolean, forCamera: boolean) {
   // eslint-disable-next-line no-async-promise-executor
@@ -2303,6 +2349,7 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
     showDebugLog: showDebugLogWindow,
     showCallingDevTools: showCallingDevToolsWindow,
     showKeyboardShortcuts,
+    showProxySettings: showProxyWindow, 
     showSettings: () => {
       if (!settingsChannel) {
         log.warn(
