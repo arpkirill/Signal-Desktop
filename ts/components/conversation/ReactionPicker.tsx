@@ -157,7 +157,7 @@ export const ReactionPicker = React.forwardRef<HTMLDivElement, Props>(
                 onSelectEmoji={onSelectEmoji}
                 theme={theme}
                 showCustomizePreferredReactionsButton
-                closeOnSelect
+                closeOnSelect={false}
                 messageEmojis={messageEmojis}
               >
                 <Button

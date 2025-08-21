@@ -39,14 +39,19 @@ export const createTemplate = (
     showCallingDevTools,
     showKeyboardShortcuts,
     showSettings,
-    showProxySettings, 
+    showProxySettings,
+    openArtCreator,
     zoomIn,
     zoomOut,
     zoomReset,
   } = options;
 
-  const fileSubmenu: MenuListType[number]['submenu'] = [
-  ];
+    const fileSubmenu: MenuListType[number]['submenu'] = [
+        {
+            label: i18n('icu:mainMenuCreateStickers'),
+            click: openArtCreator,
+        },
+    ];
 
   // Only show Settings in File menu on non-macOS platforms
   if (platform !== 'darwin') {

@@ -296,7 +296,14 @@ export function CallScreen({
   const openFpsMenu = useCallback((event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
-    setFpsMenuPos({ x: event.clientX, y: event.clientY });
+    const btn = fpsButtonRef.current;
+    if (btn) {
+      const rect = btn.getBoundingClientRect();
+      // Provisional position; final clamping happens in layout effect
+      setFpsMenuPos({ x: Math.round(rect.left + rect.width / 2), y: Math.round(rect.top) });
+    } else {
+      setFpsMenuPos({ x: event.clientX, y: event.clientY });
+    }
     setShowFpsMenu(true);
   }, []);
   const closeFpsMenu = useCallback(() => setShowFpsMenu(false), []);
@@ -305,6 +312,16 @@ export function CallScreen({
     setFpsValue(value);
     setShowFpsMenu(false);
   }, []);
+
+  // Simple fade/slide animation state for the FPS menu
+  const [fpsMenuAnim, setFpsMenuAnim] = useState(false);
+  useEffect(() => {
+    if (showFpsMenu) {
+      requestAnimationFrame(() => setFpsMenuAnim(true));
+    } else {
+      setFpsMenuAnim(false);
+    }
+  }, [showFpsMenu]);
 
   useEffect(() => {
     if (!showFpsMenu) {
@@ -324,15 +341,22 @@ export function CallScreen({
       return;
     }
     const el = fpsMenuRef.current;
-    if (!el) {
+    const btn = fpsButtonRef.current;
+    if (!el || !btn) {
       return;
     }
-    const rect = el.getBoundingClientRect();
+    const menuRect = el.getBoundingClientRect();
+    const btnRect = btn.getBoundingClientRect();
     const pad = 8;
-    let left = fpsMenuPos.x;
-    let top = fpsMenuPos.y;
-    const maxLeft = window.innerWidth - rect.width - pad;
-    const maxTop = window.innerHeight - rect.height - pad;
+    // Prefer above the button; if not enough space, place below
+    let left = Math.round(btnRect.left + (btnRect.width - menuRect.width) / 2);
+    let top = Math.round(btnRect.top - menuRect.height - 10);
+    if (top < pad) {
+      top = Math.round(btnRect.bottom + 10);
+    }
+    // Clamp to viewport
+    const maxLeft = window.innerWidth - menuRect.width - pad;
+    const maxTop = window.innerHeight - menuRect.height - pad;
     if (left > maxLeft) left = Math.max(pad, maxLeft);
     if (top > maxTop) top = Math.max(pad, maxTop);
     if (left < pad) left = pad;
@@ -1141,6 +1165,7 @@ export function CallScreen({
             {/* FPS control button visible in the controls bar */}
             <div className="CallControls__FpsControl" onMouseEnter={onControlsMouseEnter} onMouseLeave={onControlsMouseLeave}>
               <button
+                ref={fpsButtonRef as any}
                 type="button"
                 aria-label={`Screen share FPS: ${fpsValue}`}
                 className="CallControls__FpsButton"
@@ -1257,11 +1282,14 @@ export function CallScreen({
             maxWidth: '260px',
             maxHeight: '60vh',
             overflowY: 'auto',
-            border: '1px solid rgba(255,255,255,0.12)'
+            border: '1px solid rgba(255,255,255,0.12)',
+            opacity: fpsMenuAnim ? 1 : 0,
+            transform: `translateY(${fpsMenuAnim ? 0 : 6}px)`,
+            transition: 'opacity 140ms ease, transform 180ms ease'
           }}
         >
           <div style={{ fontSize: 12, opacity: 0.75, marginBottom: 8, letterSpacing: 0.2 }}>
-            Screen share FPS
+            Частота кадров экрана
           </div>
           {([1, 5, 15, 30, 60, 144] as ScreenShareFramerate[]).map(opt => (
             <button
@@ -1284,7 +1312,8 @@ export function CallScreen({
               <span style={{ width: 16, textAlign: 'center', opacity: opt === fpsValue ? 1 : 0.4 }}>
                 {opt === fpsValue ? '✓' : '•'}
               </span>
-              <span style={{ flex: 1 }}>{opt} FPS{opt === 1 ? ' (min)' : opt === 5 ? ' (low)' : opt === 15 ? ' (medium)' : opt === 30 ? ' (high)' : ' (max)'}
+              <span style={{ flex: 1 }}>
+                {opt} FPS {opt === 1 ? '(минимум)' : opt === 5 ? '(низкая)' : opt === 15 ? '(средняя)' : opt === 30 ? '(высокая)' : '(макс.)'}
               </span>
             </button>
           ))}
