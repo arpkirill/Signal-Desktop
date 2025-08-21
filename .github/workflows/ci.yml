@@ -14,6 +14,101 @@ permissions:
   contents: write
 
 jobs:
+  macos:
+    needs: windows
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - run: uname -a
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4
+      - name: Setup node.js
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+          cache-dependency-path: 'pnpm-lock.yaml'
+      - name: Cache .electron-gyp
+        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4
+        with:
+          path: ~/.electron-gyp
+          key: electron-gyp-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      # - name: Setup sccache
+      #   uses: mozilla-actions/sccache-action@054db53350805f83040bf3e6e9b8cf5a139aa7c9 # v0.0.7
+      # - name: Restore sccache
+      #   uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4
+      #   with:
+      #     path: ${{ env.SCCACHE_PATH }}
+      #     key: sccache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'patches/**') }}
+
+      - name: Install Desktop node_modules
+        run: pnpm install
+        env:
+          # CC: sccache clang
+          # CXX: sccache clang++
+          # SCCACHE_GHA_ENABLED: "true"
+          NPM_CONFIG_LOGLEVEL: verbose
+
+      - run: pnpm run generate
+      - run: pnpm run prepare-beta-build
+      - run: pnpm run test-node
+      - run: pnpm run test-electron
+        env:
+          ARTIFACTS_DIR: artifacts/macos
+          WORKER_COUNT: 4
+        timeout-minutes: 5
+      - run: touch noop.sh && chmod +x noop.sh
+      - run: pnpm run build
+        env:
+          # CC: sccache clang
+          # CXX: sccache clang++
+          # SCCACHE_GHA_ENABLED: "true"
+          DISABLE_INSPECT_FUSE: on
+          SIGN_MACOS_SCRIPT: noop.sh
+          ARTIFACTS_DIR: artifacts/macos
+      - name: Upload installer size
+        if: ${{ github.repository == 'signalapp/Signal-Desktop-Private' && github.ref == 'refs/heads/main' }}
+        run: |
+          node ts/scripts/dd-installer-size.js macos-arm64
+          node ts/scripts/dd-installer-size.js macos-x64
+          node ts/scripts/dd-installer-size.js macos-universal
+        env:
+          DD_API_KEY: ${{ secrets.DATADOG_API_KEY }}
+      - run: pnpm run test-release
+        env:
+          NODE_ENV: production
+
+      - name: Upload macOS installer (.dmg and .zip)
+        if: success()
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4
+        with:
+          name: Signal-macOS-Installer
+          path: |
+            release/*.dmg
+            release/*.zip
+          if-no-files-found: error
+
+      - name: Publish GitHub Release with macOS installer
+        if: success() && github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: auto-${{ github.ref_name }}-${{ github.run_number }}
+          name: "${{ github.ref_name }} build ${{ github.run_number }}"
+          draft: false
+          prerelease: ${{ github.ref != 'refs/heads/main' }}
+          files: |
+            release/*.dmg
+            release/*.zip
+
+      - name: Upload artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4
+        with:
+          path: artifacts
+
   windows:
     runs-on: windows-latest
     timeout-minutes: 30
