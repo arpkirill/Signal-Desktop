@@ -658,6 +658,21 @@ export function Preferences({
     elements[0]?.focus();
   }, [page]);
 
+  // Proxy settings state (top-level hooks; do not put hooks inside conditional branches)
+  const [proxyValue, setProxyValue] = useState<string>(
+    window.SignalContext.config.proxyUrl || ''
+  );
+  useEffect(() => {
+    // Load stored value from main (userConfig), fallback to existing config
+    window.IPC.getProxyUrl?.()
+      .then(v => {
+        if (typeof v === 'string') {
+          setProxyValue(v);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   const onAudioOutputSelectChange = useCallback(
     (value: string) => {
       if (value === 'undefined') {
@@ -1802,19 +1817,6 @@ export function Preferences({
       />
     );
   } else if (page === SettingsPage.DataUsage) {
-    const [proxyValue, setProxyValue] = useState<string>(
-      window.SignalContext.config.proxyUrl || ''
-    );
-    useEffect(() => {
-      // Load stored value from main (userConfig), fallback to existing config
-      window.IPC.getProxyUrl?.()
-        .then(v => {
-          if (typeof v === 'string') {
-            setProxyValue(v);
-          }
-        })
-        .catch(() => {});
-    }, []);
     const pageContents = (
       <>
         <SettingsRow title={i18n('icu:Preferences__media-auto-download')}>
