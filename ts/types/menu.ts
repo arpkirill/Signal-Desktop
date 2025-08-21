@@ -12,6 +12,8 @@ export type MenuOptionsType = Readonly<{
   isNightly: boolean;
   isProduction: boolean;
   platform: string;
+  // Optional feature flag: when true, include "Proxy…" item in File menu
+  proxyMenuEnabled?: boolean;
 }>;
 
 export type MenuActionsType = Readonly<{  

@@ -46,31 +46,38 @@ export const createTemplate = (
     zoomReset,
   } = options;
 
+  const fileSubmenu: MenuListType[number]['submenu'] = [
+    {
+      label: i18n('icu:mainMenuCreateStickers'),
+      click: openArtCreator,
+    },
+  ];
+
+  // Only show Settings in File menu on non-macOS platforms
+  if (platform !== 'darwin') {
+    fileSubmenu.push({
+      label: i18n('icu:mainMenuSettings'),
+      accelerator: 'CommandOrControl+,',
+      click: showSettings,
+    });
+  }
+
+  // Show Proxy entry only when explicitly enabled by options
+  if (options.proxyMenuEnabled) {
+    fileSubmenu.push({
+      label: 'Proxy…',
+      click: showProxySettings,
+    });
+  }
+
+  // Common separator and Quit role
+  fileSubmenu.push({ type: 'separator' });
+  fileSubmenu.push({ role: 'quit', label: i18n('icu:appMenuQuit') });
+
   const template: MenuListType = [
     {
       label: i18n('icu:mainMenuFile'),
-      submenu: [
-        {
-          label: i18n('icu:mainMenuCreateStickers'),
-          click: openArtCreator,
-        },
-        {
-          label: i18n('icu:mainMenuSettings'),
-          accelerator: 'CommandOrControl+,',
-          click: showSettings,
-        },
-        {
-          label: 'Proxy…',
-          click: showProxySettings,
-        },
-        {
-          type: 'separator',
-        },
-        {
-          role: 'quit',
-          label: i18n('icu:appMenuQuit'),
-        },
-      ],
+      submenu: fileSubmenu,
     },
     {
       label: i18n('icu:mainMenuEdit'),

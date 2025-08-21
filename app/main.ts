@@ -2333,6 +2333,7 @@ function setupMenu(options?: Partial<CreateTemplateOptionsType>) {
     isNightly: isNightly(version),
     isProduction: isProduction(version),
     platform,
+    proxyMenuEnabled: true,
 
     // actions
     forceUpdate,
