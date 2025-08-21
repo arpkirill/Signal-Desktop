@@ -1920,17 +1920,17 @@ export function Preferences({
           </FlowingControl>
         </SettingsRow>
 
-        <SettingsRow title="Proxy">
+        <SettingsRow title="Прокси">
           <FlowingControl>
             <div className="Preferences__two-thirds-flow">
-              <div className="Preferences__option-name">Proxy URL</div>
+              <div className="Preferences__option-name">Прокси URL</div>
               <div className={classNames('Preferences__description','Preferences__description--medium')}>
-                Example: http://user:pass@host:3128 or socks5://127.0.0.1:1080
+                Пример: http://user:pass@host:3128 или socks5://127.0.0.1:1080
               </div>
               <div className="Preferences__padding">
                 <Input
                   i18n={i18n}
-                  placeholder="http://host:port or socks5://host:port"
+                  placeholder="http://host:port или socks5://host:port"
                   value={proxyValue}
                   onChange={setProxyValue}
                 />
