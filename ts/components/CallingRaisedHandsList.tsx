@@ -138,7 +138,7 @@ export function CallingRaisedHandsList({
                     {i18n('icu:CallControls__RaiseHands--lower')}
                   </button>
                 )}
-              <span className="module-calling-participants-list__status-icon" role="img" aria-label={i18n('icu:CallControls__RaiseHands--raise')} style={{ fontSize: 16, lineHeight: '16px' }}>🖕</span>
+              <span className="module-calling-participants-list__status-icon" role="img" aria-hidden style={{ fontSize: 16, lineHeight: '16px' }}>🖕</span>
             </li>
           ))}
         </ul>
@@ -264,7 +264,7 @@ export function CallingRaisedHandsListButton({
       style={{ ...opacitySpringProps, ...scaleSpringProps }}
       type="button"
     >
-      <span className="CallingRaisedHandsList__ButtonIconEmoji" role="img" aria-label={i18n('icu:CallControls__RaiseHands--raise')} style={{ fontSize: 20, lineHeight: '20px' }}>🖕</span>
+      <span className="CallingRaisedHandsList__ButtonIconEmoji" role="img" aria-hidden style={{ fontSize: 20, lineHeight: '20px' }}>🖕</span>
       {shownSyncedLocalHandRaised ? (
         <>
           {i18n('icu:you')}
