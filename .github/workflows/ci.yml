@@ -10,6 +10,9 @@ on:
       - '[0-9]+.[0-9]+.x'
   pull_request:
 
+permissions:
+  contents: write
+
 jobs:
   windows:
     runs-on: windows-latest
@@ -48,19 +51,13 @@ jobs:
       env:
         ARTIFACTS_DIR: artifacts/win
 
-    - name: Build with NSIS
+    - name: Build Windows installer (NSIS)
       run: pnpm run build:release
-      if: github.ref == 'refs/heads/main'
-      env:
-        DISABLE_INSPECT_FUSE: on
-    - name: Build without NSIS
-      run: pnpm run build:release --win dir
-      if: github.ref != 'refs/heads/main'
       env:
         DISABLE_INSPECT_FUSE: on
 
     - name: Upload Windows installer (.exe)
-      if: success() && github.ref == 'refs/heads/main'
+      if: success()
       uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4
       with:
         name: Signal-Windows-Installer
@@ -89,6 +86,25 @@ jobs:
     - run: pnpm run test-release
       env:
         SIGNAL_ENV: production
+
+    - name: Create tag for release
+      if: success() && github.event_name == 'push'
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git tag "auto-${{ github.ref_name }}-${{ github.run_number }}"
+        git push origin "auto-${{ github.ref_name }}-${{ github.run_number }}"
+
+    - name: Publish GitHub Release with installer
+      if: success() && github.event_name == 'push'
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: auto-${{ github.ref_name }}-${{ github.run_number }}
+        name: "${{ github.ref_name }} build ${{ github.run_number }}"
+        draft: false
+        prerelease: ${{ github.ref != 'refs/heads/main' }}
+        files: |
+          release/*.exe
 
     - name: Upload artifacts on failure
       if: failure()
