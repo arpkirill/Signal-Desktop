@@ -17,7 +17,7 @@ function ProxyApp() {
   }, []);
 
   return (
-    <div className="Preferences__scroll-area" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 8, userSelect: 'text' }}>
+    <div className="ProxyWindow" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 8, userSelect: 'text', overflow: 'hidden' }}>
       <div style={{ fontWeight: 600 }}>Прокси URL</div>
       <div className="Preferences__description Preferences__description--medium">
         Пример: http://user:pass@host:3128 или socks5://127.0.0.1:1080

@@ -1920,46 +1920,6 @@ export function Preferences({
           </FlowingControl>
         </SettingsRow>
 
-        <SettingsRow title="Прокси">
-          <FlowingControl>
-            <div className="Preferences__two-thirds-flow">
-              <div className="Preferences__option-name">Прокси URL</div>
-              <div className={classNames('Preferences__description','Preferences__description--medium')}>
-                Пример: http://user:pass@host:3128 или socks5://127.0.0.1:1080
-              </div>
-              <div className="Preferences__padding">
-                <Input
-                  i18n={i18n}
-                  placeholder="http://host:port или socks5://host:port"
-                  value={proxyValue}
-                  onChange={setProxyValue}
-                />
-              </div>
-            </div>
-            <div className={classNames('Preferences__flow-button','Preferences__one-third-flow','Preferences__one-third-flow--align-right')}>
-              <div className="Preferences__button-row">
-                <Button
-                  variant={ButtonVariant.Primary}
-                  onClick={async () => {
-                    await window.IPC.setProxyUrl?.(proxyValue);
-                    window.SignalContext.restartApp();
-                  }}
-                >
-                  Apply and restart
-                </Button>
-                <Button
-                  variant={ButtonVariant.Secondary}
-                  onClick={async () => {
-                    await window.IPC.setProxyUrl?.('');
-                    window.SignalContext.restartApp();
-                  }}
-                >
-                  Clear and restart
-                </Button>
-              </div>
-            </div>
-          </FlowingControl>
-        </SettingsRow>
       </>
     );
     content = (

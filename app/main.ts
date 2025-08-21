@@ -1507,7 +1507,7 @@ async function showProxyWindow() {
 
   const options: Electron.BrowserWindowConstructorOptions = {
     width: 520,
-    height: 220,
+    height: 260,
     resizable: false,
     title: 'Proxy',
     titleBarStyle: nonMainTitleBarStyle,

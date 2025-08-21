@@ -65,7 +65,7 @@ export const createTemplate = (
   // Show Proxy entry only when explicitly enabled by options
   if (options.proxyMenuEnabled) {
     fileSubmenu.push({
-      label: 'Proxy…',
+      label: 'Прокси',
       click: showProxySettings,
     });
   }
