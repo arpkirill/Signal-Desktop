@@ -17,12 +17,12 @@ function ProxyApp() {
   }, []);
 
   return (
-    <div className="Preferences Preferences__scroll-area" style={{ padding: 16 }}>
-      <div style={{ marginBottom: 8, fontWeight: 600 }}>Прокси URL</div>
-      <div className="Preferences__description Preferences__description--medium" style={{ marginBottom: 8 }}>
+    <div className="Preferences__scroll-area" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 8, userSelect: 'text' }}>
+      <div style={{ fontWeight: 600 }}>Прокси URL</div>
+      <div className="Preferences__description Preferences__description--medium">
         Пример: http://user:pass@host:3128 или socks5://127.0.0.1:1080
       </div>
-      <div style={{ marginBottom: 12 }}>
+      <div>
         <Input i18n={i18n} placeholder="http://host:port или socks5://host:port" value={value} onChange={setValue} />
       </div>
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
