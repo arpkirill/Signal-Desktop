@@ -2727,7 +2727,11 @@ ipc.on('get-config', async event => {
     osRelease: os.release(),
     osVersion: os.version(),
     appInstance: process.env.NODE_APP_INSTANCE || undefined,
-    proxyUrl: process.env.HTTPS_PROXY || process.env.https_proxy || undefined,
+    proxyUrl:
+      (userConfig.get<string | null>('proxyUrl') || undefined) ||
+      process.env.HTTPS_PROXY ||
+      process.env.https_proxy ||
+      undefined,
     contentProxyUrl: config.get<string>('contentProxyUrl'),
     sfuUrl: config.get('sfuUrl'),
     reducedMotionSetting: animationSettings.prefersReducedMotion,

@@ -15,6 +15,7 @@ import classNames from 'classnames';
 import * as LocaleMatcher from '@formatjs/intl-localematcher';
 import type { MutableRefObject, ReactNode } from 'react';
 import { Button, ButtonVariant } from './Button';
+import { Input } from './Input';
 import { ChatColorPicker } from './ChatColorPicker';
 import { Checkbox } from './Checkbox';
 import { WidthBreakpoint } from './_util';
@@ -1801,6 +1802,19 @@ export function Preferences({
       />
     );
   } else if (page === SettingsPage.DataUsage) {
+    const [proxyValue, setProxyValue] = useState<string>(
+      window.SignalContext.config.proxyUrl || ''
+    );
+    useEffect(() => {
+      // Load stored value from main (userConfig), fallback to existing config
+      window.IPC.getProxyUrl?.()
+        .then(v => {
+          if (typeof v === 'string') {
+            setProxyValue(v);
+          }
+        })
+        .catch(() => {});
+    }, []);
     const pageContents = (
       <>
         <SettingsRow title={i18n('icu:Preferences__media-auto-download')}>
@@ -1900,6 +1914,47 @@ export function Preferences({
                 ]}
                 value={sentMediaQualitySetting}
               />
+            </div>
+          </FlowingControl>
+        </SettingsRow>
+
+        <SettingsRow title="Proxy">
+          <FlowingControl>
+            <div className="Preferences__two-thirds-flow">
+              <div className="Preferences__option-name">Proxy URL</div>
+              <div className={classNames('Preferences__description','Preferences__description--medium')}>
+                Example: http://user:pass@host:3128 or socks5://127.0.0.1:1080
+              </div>
+              <div className="Preferences__padding">
+                <Input
+                  i18n={i18n}
+                  placeholder="http://host:port or socks5://host:port"
+                  value={proxyValue}
+                  onChange={setProxyValue}
+                />
+              </div>
+            </div>
+            <div className={classNames('Preferences__flow-button','Preferences__one-third-flow','Preferences__one-third-flow--align-right')}>
+              <div className="Preferences__button-row">
+                <Button
+                  variant={ButtonVariant.Primary}
+                  onClick={async () => {
+                    await window.IPC.setProxyUrl?.(proxyValue);
+                    window.SignalContext.restartApp();
+                  }}
+                >
+                  Apply and restart
+                </Button>
+                <Button
+                  variant={ButtonVariant.Secondary}
+                  onClick={async () => {
+                    await window.IPC.setProxyUrl?.('');
+                    window.SignalContext.restartApp();
+                  }}
+                >
+                  Clear and restart
+                </Button>
+              </div>
             </div>
           </FlowingControl>
         </SettingsRow>

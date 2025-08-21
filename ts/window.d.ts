@@ -75,6 +75,7 @@ export type IPCType = {
     mediaType: 'microphone' | 'camera' | 'screenCapture'
   ) => Promise<void>;
   getMediaPermissions: () => Promise<boolean | undefined>;
+  getProxyUrl: () => Promise<string | undefined>;
   whenWindowVisible: () => Promise<void>;
   logAppLoadedEvent?: (options: { processedCount?: number }) => void;
   readyForUpdates: () => void;
@@ -83,6 +84,7 @@ export type IPCType = {
   setAutoLaunch: (value: boolean) => Promise<void>;
   setBadge: (badge: number | 'marked-unread') => void;
   setMediaPermissions: (value: boolean) => Promise<void>;
+  setProxyUrl: (value: string) => Promise<void>;
   setMediaCameraPermissions: (value: boolean) => Promise<void>;
   setMenuBarVisibility: (value: boolean) => void;
   showDebugLog: () => void;

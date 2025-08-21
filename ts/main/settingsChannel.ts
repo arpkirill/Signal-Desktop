@@ -52,6 +52,18 @@ export class SettingsChannel extends EventEmitter {
 
     installPermissionsHandler({ session: session.defaultSession, userConfig });
 
+    // Proxy settings (persisted in userConfig)
+    ipc.handle('settings:get:proxyUrl', () => {
+      return userConfig.get('proxyUrl') || '';
+    });
+    ipc.handle('settings:set:proxyUrl', (_event, value: string) => {
+      if (typeof value === 'string' && value.trim()) {
+        userConfig.set('proxyUrl', value.trim());
+      } else {
+        userConfig.unset('proxyUrl');
+      }
+    });
+
     // These ones are different because its single source of truth is userConfig,
     // not IndexedDB
     ipc.handle('settings:get:mediaPermissions', () => {

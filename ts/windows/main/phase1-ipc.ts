@@ -133,6 +133,7 @@ const IPC: IPCType = {
   openSystemMediaPermissions: mediaType =>
     ipc.invoke('open-system-media-permissions', mediaType),
   getMediaPermissions: () => ipc.invoke('settings:get:mediaPermissions'),
+  getProxyUrl: () => ipc.invoke('settings:get:proxyUrl'),
   getMediaCameraPermissions: () =>
     ipc.invoke('settings:get:mediaCameraPermissions'),
   logAppLoadedEvent: ({ processedCount }) =>
@@ -166,6 +167,7 @@ const IPC: IPCType = {
     ipc.invoke('show-permissions-popup', forCalling, forCamera),
   setMediaPermissions: (value: boolean) =>
     ipc.invoke('settings:set:mediaPermissions', value),
+  setProxyUrl: (value: string) => ipc.invoke('settings:set:proxyUrl', value),
   setMediaCameraPermissions: (value: boolean) =>
     ipc.invoke('settings:set:mediaCameraPermissions', value),
   showSettings: () => ipc.send('show-settings'),
