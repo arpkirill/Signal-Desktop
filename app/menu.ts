@@ -291,10 +291,9 @@ function updateForMac(
   // in the app menu
   const fileMenu = template[0];
   if (Array.isArray(fileMenu.submenu)) {
-    fileMenu.submenu.pop();
-    fileMenu.submenu.pop();
-    fileMenu.submenu.pop();
-    // And insert "close".
+    // Remove the trailing Quit item and its preceding separator, but keep the first item (Create/upload sticker pack)
+    fileMenu.submenu.pop(); // removes Quit
+    fileMenu.submenu.pop(); // removes separator before Quit
     fileMenu.submenu.push(
       {
         type: 'separator',
