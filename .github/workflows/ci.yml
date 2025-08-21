@@ -72,8 +72,6 @@ jobs:
       - name: Upload installer size
         if: ${{ github.repository == 'signalapp/Signal-Desktop-Private' && github.ref == 'refs/heads/main' }}
         run: |
-          node ts/scripts/dd-installer-size.js macos-arm64
-          node ts/scripts/dd-installer-size.js macos-x64
           node ts/scripts/dd-installer-size.js macos-universal
         env:
           DD_API_KEY: ${{ secrets.DATADOG_API_KEY }}
@@ -88,7 +86,6 @@ jobs:
           name: Signal-macOS-Installer
           path: |
             release/*.dmg
-            release/*.zip
           if-no-files-found: error
 
       - name: Publish GitHub Release with macOS installer
@@ -101,7 +98,6 @@ jobs:
           prerelease: ${{ github.ref != 'refs/heads/main' }}
           files: |
             release/*.dmg
-            release/*.zip
 
       - name: Upload artifacts on failure
         if: failure()
