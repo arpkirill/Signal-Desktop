@@ -10,10 +10,10 @@ import * as Errors from '../types/errors';
 import type { PresentableSource } from '../types/Calling';
 import type { LocalizerType } from '../types/Util';
 import {
-  REQUESTED_SCREEN_SHARE_WIDTH,
-  REQUESTED_SCREEN_SHARE_HEIGHT,
   getRequestedScreenShareFramerate,
   SCREEN_SHARE_FPS_CHANGED_EVENT,
+  getRequestedScreenShareDimensions,
+  SCREEN_SHARE_QUALITY_CHANGED_EVENT,
 } from '../calling/constants';
 import { strictAssert } from './assert';
 import { explodePromise } from './explodePromise';
@@ -197,14 +197,15 @@ export class DesktopCapturer {
       strictAssert(videoTrack, 'videoTrack does not exist');
 
       // Apply constraints and ensure that there is at least 1 frame per second.
+      const { width, height } = getRequestedScreenShareDimensions();
       await videoTrack.applyConstraints({
         width: {
-          max: REQUESTED_SCREEN_SHARE_WIDTH,
-          ideal: REQUESTED_SCREEN_SHARE_WIDTH,
+          max: width,
+          ideal: width,
         },
         height: {
-          max: REQUESTED_SCREEN_SHARE_HEIGHT,
-          ideal: REQUESTED_SCREEN_SHARE_HEIGHT,
+          max: height,
+          ideal: height,
         },
         frameRate: {
           min: 1,
@@ -280,9 +281,10 @@ export class DesktopCapturer {
     // until requested by user.
     // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
     const macScreenShare = require('@indutny/mac-screen-share');
+    const dims = getRequestedScreenShareDimensions();
     const stream: Stream = new macScreenShare.Stream({
-      width: REQUESTED_SCREEN_SHARE_WIDTH,
-      height: REQUESTED_SCREEN_SHARE_HEIGHT,
+      width: dims.width,
+      height: dims.height,
       frameRate: getRequestedScreenShareFramerate(),
 
       onStart: () => {
@@ -407,6 +409,24 @@ export class DesktopCapturer {
             }
           } catch (e) {
             log.warn('desktopCapturer: failed to apply new FPS', Errors.toLogFormat(e as any));
+          }
+        }
+      });
+
+      // Listen for Quality change events and apply new width/height to active browser streams
+      window.addEventListener(SCREEN_SHARE_QUALITY_CHANGED_EVENT, async () => {
+        const { width, height } = getRequestedScreenShareDimensions();
+        for (const stream of activeScreenShareStreams) {
+          try {
+            const track = stream.getVideoTracks()[0];
+            if (track) {
+              await track.applyConstraints({
+                width: { max: width, ideal: width },
+                height: { max: height, ideal: height },
+              });
+            }
+          } catch (e) {
+            log.warn('desktopCapturer: failed to apply new Quality', Errors.toLogFormat(e as any));
           }
         }
       });

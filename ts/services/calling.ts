@@ -105,6 +105,7 @@ import {
   REQUESTED_SCREEN_SHARE_WIDTH,
   REQUESTED_SCREEN_SHARE_HEIGHT,
   getRequestedScreenShareFramerate,
+  getRequestedScreenShareDimensions,
 } from '../calling/constants';
 import { callingMessageToProto } from '../util/callingMessageToProto';
 import { requestMicrophonePermissions } from '../util/requestMicrophonePermissions';
@@ -2415,10 +2416,11 @@ export class CallingClass {
     }
 
     // Start screen sharing stream
+    const dims = getRequestedScreenShareDimensions();
     await this.enableCaptureAndSend(call, {
       maxFramerate: getRequestedScreenShareFramerate(),
-      maxHeight: REQUESTED_SCREEN_SHARE_HEIGHT,
-      maxWidth: REQUESTED_SCREEN_SHARE_WIDTH,
+      maxHeight: dims.height,
+      maxWidth: dims.width,
       mediaStream,
       onEnded: () => {
         this.#reduxInterface?.cancelPresenting();

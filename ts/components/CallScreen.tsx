@@ -22,7 +22,7 @@ import { CallingHeader, getCallViewIconClassname } from './CallingHeader';
 import { CallingPreCallInfo, RingMode } from './CallingPreCallInfo';
 import { CallingButton, CallingButtonType } from './CallingButton';
 import { Button, ButtonVariant } from './Button';
-import { setRequestedScreenShareFramerate, getRequestedScreenShareFramerate, type ScreenShareFramerate } from '../calling/constants';
+import { setRequestedScreenShareFramerate, getRequestedScreenShareFramerate, type ScreenShareFramerate, setRequestedScreenShareQuality, getRequestedScreenShareQuality, type ScreenShareQuality, SCREEN_SHARE_QUALITIES } from '../calling/constants';
 import { TooltipPlacement } from './Tooltip';
 import { CallBackgroundBlur } from './CallBackgroundBlur';
 import type {
@@ -289,6 +289,8 @@ export function CallScreen({
 
   const fpsMenuRef = React.useRef<null | HTMLDivElement>(null);
   const fpsButtonRef = React.useRef<HTMLButtonElement | null>(null);
+  const qualityMenuRef = React.useRef<null | HTMLDivElement>(null);
+  const qualityButtonRef = React.useRef<HTMLButtonElement | null>(null);
 
   // FPS control/menu state
   const [fpsValue, setFpsValue] = useState<ScreenShareFramerate>(getRequestedScreenShareFramerate());
@@ -329,6 +331,90 @@ export function CallScreen({
     setShowFpsMenu(false);
     setTimeout(() => setIsFpsMenuMounted(false), 200);
   }, []);
+
+  // Quality control/menu state
+  const [qualityValue, setQualityValue] = useState<ScreenShareQuality>(getRequestedScreenShareQuality());
+  const [isQualityMenuMounted, setIsQualityMenuMounted] = useState(false);
+  const [showQualityMenu, setShowQualityMenu] = useState(false);
+  const [qualityMenuPos, setQualityMenuPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const openQualityMenu = useCallback((event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (showQualityMenu) {
+      setShowQualityMenu(false);
+      return;
+    }
+
+    const btn = qualityButtonRef.current;
+    if (btn) {
+      const rect = btn.getBoundingClientRect();
+      setQualityMenuPos({ x: Math.round(rect.left + rect.width / 2), y: Math.round(rect.top) });
+    } else {
+      setQualityMenuPos({ x: event.clientX, y: event.clientY });
+    }
+    setIsQualityMenuMounted(true);
+    requestAnimationFrame(() => setShowQualityMenu(true));
+  }, [showQualityMenu]);
+  const closeQualityMenu = useCallback(() => {
+    setShowQualityMenu(false);
+    setTimeout(() => setIsQualityMenuMounted(false), 200);
+  }, []);
+  const selectQuality = useCallback((value: ScreenShareQuality) => {
+    setRequestedScreenShareQuality(value);
+    setQualityValue(value);
+    setShowQualityMenu(false);
+    setTimeout(() => setIsQualityMenuMounted(false), 200);
+  }, []);
+
+  const [qualityMenuAnim, setQualityMenuAnim] = useState(false);
+  useEffect(() => {
+    if (showQualityMenu) {
+      requestAnimationFrame(() => setQualityMenuAnim(true));
+    } else {
+      setQualityMenuAnim(false);
+    }
+  }, [showQualityMenu]);
+
+  useEffect(() => {
+    if (!isQualityMenuMounted) {
+      return noop;
+    }
+    const handler = () => {
+      setShowQualityMenu(false);
+      setTimeout(() => setIsQualityMenuMounted(false), 200);
+    };
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, [isQualityMenuMounted]);
+
+  React.useLayoutEffect(() => {
+    if (!showQualityMenu) {
+      return;
+    }
+    const el = qualityMenuRef.current;
+    const btn = qualityButtonRef.current;
+    if (!el || !btn) {
+      return;
+    }
+    const menuRect = el.getBoundingClientRect();
+    const btnRect = btn.getBoundingClientRect();
+    const pad = 8;
+    let left = Math.round(btnRect.left + (btnRect.width - menuRect.width) / 2);
+    let top = Math.round(btnRect.top - menuRect.height - 10);
+    if (top < pad) {
+      top = Math.round(btnRect.bottom + 10);
+    }
+    const maxLeft = window.innerWidth - menuRect.width - pad;
+    const maxTop = window.innerHeight - menuRect.height - pad;
+    if (left > maxLeft) left = Math.max(pad, maxLeft);
+    if (top > maxTop) top = Math.max(pad, maxTop);
+    if (left < pad) left = pad;
+    if (top < pad) top = pad;
+    if (left !== qualityMenuPos.x || top !== qualityMenuPos.y) {
+      setQualityMenuPos({ x: left, y: top });
+    }
+  }, [showQualityMenu, qualityMenuPos]);
 
   // Simple fade/slide animation state for the FPS menu
   const [fpsMenuAnim, setFpsMenuAnim] = useState(false);
@@ -1180,7 +1266,7 @@ export function CallScreen({
           )}
 
           <div className="CallControls__ButtonContainer">
-            {/* FPS control button visible in the controls bar */}
+            {/* FPS and Quality control buttons visible in the controls bar */}
             <div className="CallControls__FpsControl" onMouseEnter={onControlsMouseEnter} onMouseLeave={onControlsMouseLeave}>
               <button
                 ref={fpsButtonRef as any}
@@ -1200,6 +1286,25 @@ export function CallScreen({
                 }}
               >
                 FPS: {fpsValue}
+              </button>
+              <button
+                ref={qualityButtonRef as any}
+                type="button"
+                aria-label={`Screen share Quality: ${qualityValue}`}
+                className="CallControls__QualityButton"
+                onClick={(e) => openQualityMenu(e)}
+                onContextMenu={(e) => openQualityMenu(e)}
+                style={{
+                  color: '#fff',
+                  background: 'rgba(255,255,255,0.1)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  borderRadius: 8,
+                  padding: '8px 10px',
+                  marginRight: 8,
+                  cursor: 'pointer',
+                }}
+              >
+                Качество: {qualityValue}
               </button>
             </div>
             <CallingButton
@@ -1332,6 +1437,68 @@ export function CallScreen({
               </span>
               <span style={{ flex: 1 }}>
                 {opt} FPS {opt === 1 ? '(минимум)' : opt === 5 ? '(очень низкая)' : opt === 15 ? '(низкая)' : opt === 30 ? '(средняя)' : opt === 60 ? '(высокая)' : '(максимум)'}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+      {isQualityMenuMounted && (
+        <div
+          ref={qualityMenuRef as any}
+          role="menu"
+          onClick={e => e.stopPropagation()}
+          onContextMenu={e => {
+            e.preventDefault();
+            e.stopPropagation();
+            closeQualityMenu();
+          }}
+          style={{
+            position: 'fixed',
+            left: `${qualityMenuPos.x}px`,
+            top: `${qualityMenuPos.y}px`,
+            zIndex: 10000,
+            background: 'rgba(28,28,28,0.98)',
+            color: '#fff',
+            padding: '10px',
+            borderRadius: '10px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
+            minWidth: '220px',
+            maxWidth: '280px',
+            maxHeight: '60vh',
+            overflowY: 'auto',
+            border: '1px solid rgba(255,255,255,0.12)',
+            opacity: qualityMenuAnim ? 1 : 0,
+            transform: `translateY(${qualityMenuAnim ? 0 : 6}px)`,
+            transition: 'opacity 140ms ease, transform 180ms ease'
+          }}
+        >
+          <div style={{ fontSize: 12, opacity: 0.75, marginBottom: 8, letterSpacing: 0.2 }}>
+            Качество трансляции
+          </div>
+          {SCREEN_SHARE_QUALITIES.map(opt => (
+            <button
+              key={opt}
+              type="button"
+              className="link"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                width: '100%',
+                textAlign: 'left',
+                color: '#fff',
+                padding: '6px 8px',
+                borderRadius: 6,
+                background: opt === qualityValue ? 'rgba(255,255,255,0.08)' : 'transparent'
+              }}
+              onClick={() => selectQuality(opt)}
+            >
+              <span style={{ width: 16, textAlign: 'center', opacity: opt === qualityValue ? 1 : 0.4 }}>
+                {opt === qualityValue ? '✓' : '•'}
+              </span>
+              <span style={{ flex: 1 }}>
+                {opt}
+                {opt === '1440p' ? ' (2K)' : opt === '2160p' ? ' (4K)' : opt === '4320p' ? ' (8K)' : ''}
               </span>
             </button>
           ))}
