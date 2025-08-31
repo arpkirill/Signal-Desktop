@@ -1267,7 +1267,7 @@ export function CallScreen({
 
           <div className="CallControls__ButtonContainer">
             {/* FPS and Quality control buttons visible in the controls bar */}
-            <div className="CallControls__FpsControl" onMouseEnter={onControlsMouseEnter} onMouseLeave={onControlsMouseLeave}>
+            <div className="CallControls__FpsControl" onMouseEnter={onControlsMouseEnter} onMouseLeave={onControlsMouseLeave} style={{ display: 'inline-flex', flexDirection: 'row', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
               <button
                 ref={fpsButtonRef as any}
                 type="button"
@@ -1414,7 +1414,7 @@ export function CallScreen({
           <div style={{ fontSize: 12, opacity: 0.75, marginBottom: 8, letterSpacing: 0.2 }}>
             Частота кадров экрана
           </div>
-          {([1, 5, 15, 30, 60, 144] as ScreenShareFramerate[]).map(opt => (
+          {([1, 5, 15, 30, 60, 144, 165] as ScreenShareFramerate[]).map(opt => (
             <button
               key={opt}
               type="button"
