@@ -344,7 +344,7 @@ export function CallScreen({
     if (!isFpsMenuMounted) {
       return noop;
     }
-    const handler = (e: MouseEvent) => {
+    const handler = () => {
       // Close on any click outside
       setShowFpsMenu(false);
       setTimeout(() => setIsFpsMenuMounted(false), 200);

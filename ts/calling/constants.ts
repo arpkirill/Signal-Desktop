@@ -18,6 +18,7 @@ export const REQUESTED_SCREEN_SHARE_HEIGHT = 1800;
 // Default to 15fps if not set by user. Higher FPS uses more CPU.
 export type ScreenShareFramerate = 1 | 5 | 15 | 30 | 60 | 144 ;
 
+export const SCREEN_SHARE_FPS_CHANGED_EVENT = 'calling:screenShareFpsChanged';
 const SCREEN_SHARE_FRAMERATE_STORAGE_KEY = 'calling.screenShare.fps';
 
 export function getRequestedScreenShareFramerate(): ScreenShareFramerate {
@@ -42,6 +43,14 @@ export function setRequestedScreenShareFramerate(value: ScreenShareFramerate): v
     );
   } catch (_e) {
     // ignore persistence errors
+  }
+  // Notify listeners (e.g., live capturers) to apply without restart
+  try {
+    if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+      window.dispatchEvent(new CustomEvent(SCREEN_SHARE_FPS_CHANGED_EVENT, { detail: value }));
+    }
+  } catch (_e) {
+    // ignore event dispatch errors
   }
 }
 

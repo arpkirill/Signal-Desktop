@@ -13,6 +13,7 @@ import {
   REQUESTED_SCREEN_SHARE_WIDTH,
   REQUESTED_SCREEN_SHARE_HEIGHT,
   getRequestedScreenShareFramerate,
+  SCREEN_SHARE_FPS_CHANGED_EVENT,
 } from '../calling/constants';
 import { strictAssert } from './assert';
 import { explodePromise } from './explodePromise';
@@ -71,6 +72,7 @@ type State = Readonly<
 >;
 
 export const liveCapturers = new Set<DesktopCapturer>();
+export const activeScreenShareStreams = new Set<MediaStream>();
 
 export type IpcResponseType = Readonly<{
   id: string;
@@ -211,6 +213,13 @@ export class DesktopCapturer {
         },
       });
 
+      // Track active screen-share streams for dynamic FPS updates
+      activeScreenShareStreams.add(stream);
+      const removeActive = () => {
+        activeScreenShareStreams.delete(stream);
+      };
+      videoTrack.addEventListener('ended', removeActive);
+
       strictAssert(
         this.#state.step === Step.RequestingMedia ||
           this.#state.step === Step.SelectedSource,
@@ -247,6 +256,12 @@ export class DesktopCapturer {
 
     let frameRepeater: NodeJS.Timeout | undefined;
 
+    let desiredFps = getRequestedScreenShareFramerate();
+    const onFpsChanged = () => {
+      desiredFps = getRequestedScreenShareFramerate();
+      log.info('desktopCapturer: macOS desired FPS changed to', desiredFps);
+    };
+
     const cleanup = () => {
       lastFrame?.close();
       if (frameRepeater != null) {
@@ -254,6 +269,11 @@ export class DesktopCapturer {
       }
       frameRepeater = undefined;
       lastFrame = undefined;
+      try {
+        window.removeEventListener(SCREEN_SHARE_FPS_CHANGED_EVENT, onFpsChanged as any);
+      } catch (_) {
+        // ignore
+      }
     };
 
     // process.dlopen() for the addon takes roughly 34ms so avoid running it
@@ -267,6 +287,11 @@ export class DesktopCapturer {
 
       onStart: () => {
         isRunning = true;
+        try {
+          window.addEventListener(SCREEN_SHARE_FPS_CHANGED_EVENT, onFpsChanged as any);
+        } catch (_) {
+          // ignore
+        }
 
         // Repeat last frame every second to match "min" constraint above.
         frameRepeater = setInterval(() => {
@@ -303,14 +328,20 @@ export class DesktopCapturer {
         }
 
         lastFrame?.close();
-        lastFrameSentAt = Date.now();
-        lastFrame = new VideoFrame(frame, {
+        const vf = new VideoFrame(frame, {
           format: 'NV12',
           codedWidth: width,
           codedHeight: height,
           timestamp: 0,
         });
-        drop(writer.write(lastFrame.clone()));
+        lastFrame = vf;
+
+        const now = Date.now();
+        const period = Math.max(1, Math.floor(1000 / Math.max(1, desiredFps)));
+        if (now - lastFrameSentAt >= period) {
+          lastFrameSentAt = now;
+          drop(writer.write(vf.clone()));
+        }
       },
     } satisfies StreamOptions);
 
@@ -361,6 +392,27 @@ export class DesktopCapturer {
         ipcRenderer.send(`select-capture-sources:${id}:response`, selected);
       }
     );
+
+    // Listen for FPS change events and apply new frameRate to active browser streams
+    try {
+      window.addEventListener(SCREEN_SHARE_FPS_CHANGED_EVENT, async () => {
+        const fps = getRequestedScreenShareFramerate();
+        for (const stream of activeScreenShareStreams) {
+          try {
+            const track = stream.getVideoTracks()[0];
+            if (track) {
+              await track.applyConstraints({
+                frameRate: { min: 1, max: fps, ideal: fps },
+              });
+            }
+          } catch (e) {
+            log.warn('desktopCapturer: failed to apply new FPS', Errors.toLogFormat(e as any));
+          }
+        }
+      });
+    } catch (_) {
+      // ignore
+    }
   }
 }
 
